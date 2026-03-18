@@ -237,14 +237,14 @@ export const achieveStyles = StyleSheet.create({
 
 // ── Feed ──
 export const feedStyles = StyleSheet.create({
-  filters:    { flexDirection: "row", gap: 8, marginBottom: 16 },
+  filters:    { flexDirection: "row", gap: 8, marginBottom: 16},
   filterPill: {
-    paddingHorizontal: 14, paddingVertical: 6,
+    paddingHorizontal: 14, paddingVertical: 6, marginRight: 5,
     borderRadius: 20, borderWidth: 1, borderColor: theme.border,
     backgroundColor: theme.surfaceUp,
   },
   filterPillActive: {
-    paddingHorizontal: 14, paddingVertical: 6,
+    paddingHorizontal: 14, paddingVertical: 6, marginRight: 5,
     borderRadius: 20, borderWidth: 1, borderColor: "transparent",
     backgroundColor: theme.accent,
   },
@@ -285,7 +285,7 @@ export const overlayStyles = StyleSheet.create({
   // Menu
   menuPanel: {
     position: "absolute", top: 0, left: 0, bottom: 0,
-    width: "72%",
+    width: "70%",
     backgroundColor: theme.surface,
     borderRightWidth: 1, borderRightColor: theme.border,
     paddingTop: 60, paddingHorizontal: 20, paddingBottom: 40,
@@ -316,7 +316,7 @@ export const overlayStyles = StyleSheet.create({
   // Chat
   chatPanel: {
     position: "absolute", top: 0, right: 0, bottom: 0,
-    width: "88%",
+    width: "70%",
     backgroundColor: theme.surface,
     borderLeftWidth: 1, borderLeftColor: theme.border,
   },
@@ -489,4 +489,62 @@ export const chatScreenStyles = StyleSheet.create({
   parkCardBtnText:       { fontWeight: "700", fontSize: 13, color: "#000" },
   parkCardBtnJoined:     { backgroundColor: theme.greenSoft, borderWidth: 1, borderColor: theme.green + "66" },
   parkCardBtnTextJoined: { fontWeight: "700", fontSize: 13, color: theme.green },
+});
+
+export const topBarStyles = StyleSheet.create({
+  bar: {
+    height: 56, flexDirection: "row",
+    alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20,
+    backgroundColor: theme.bg,
+    borderBottomWidth: 1, borderBottomColor: theme.border,
+  },
+  logoText: { fontWeight: "700", fontSize: 20, color: theme.text, letterSpacing: -0.5 },
+  line:     { height: 2, backgroundColor: theme.text, borderRadius: 2 },
+  chatBadge:{
+    position: "absolute", top: 6, right: 6,
+    width: 8, height: 8, borderRadius: 4,
+    backgroundColor: theme.accent,
+    borderWidth: 2, borderColor: theme.bg,
+  },
+});
+
+export const navStyles = StyleSheet.create({
+  bar: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 72,
+    backgroundColor: theme.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+    paddingHorizontal: 6,
+  },
+  tab: {
+    flex: 1, height: 56,
+    alignItems: "center", justifyContent: "center",
+    gap: 3, borderRadius: 14,
+  },
+  tabActive: { backgroundColor: "rgba(245,166,35,0.13)" },
+  mapTab:    { flex: 1.4, alignItems: "center", justifyContent: "center", gap: 3 },
+  mapIconWrap: {
+    width: 50, height: 50, borderRadius: 16,
+    backgroundColor: theme.surfaceUp,
+    borderWidth: 1.5, borderColor: theme.border,
+    alignItems: "center", justifyContent: "center",
+  },
+  mapIconWrapActive: {
+    backgroundColor: "rgba(245,166,35,0.18)",
+    borderColor: "rgba(245,166,35,0.5)",
+    transform: [{ translateY: -4 }],
+    shadowColor: theme.accent,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  mapIcon:   { fontSize: 30 },
+  icon:      { fontSize: 24, color: theme.muted },
+  iconActive:{ color: theme.accent },
+  label:     { fontSize: 11, fontWeight: "600", letterSpacing: 0.3, color: theme.muted },
+  labelActive: { color: theme.accent },
 });

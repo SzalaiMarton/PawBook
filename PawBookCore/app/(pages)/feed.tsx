@@ -2,12 +2,12 @@ import { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { theme, feedItems } from "../styles/theme";
 import { feedStyles } from "../styles/styles";
+import Filters from "../components/filters";
 
 const FILTERS = ["All", "Going Out", "Check-ins", "Photos"];
 
 export default function FeedPage() {
   const [likedPosts,    setLikedPosts]    = useState<Record<number, boolean>>({});
-  const [activeFilter,  setActiveFilter]  = useState("All");
 
   const toggleLike = (id: number) =>
     setLikedPosts((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -18,25 +18,7 @@ export default function FeedPage() {
       contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={feedStyles.filters}
-      >
-        {FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={activeFilter === f ? feedStyles.filterPillActive : feedStyles.filterPill}
-            onPress={() => setActiveFilter(f)}
-            activeOpacity={0.7}
-          >
-            <Text style={activeFilter === f ? feedStyles.filterTextActive : feedStyles.filterText}>
-              {f}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <Filters filter={FILTERS}/>
 
       {/* Feed cards */}
       {feedItems.map((item) => (

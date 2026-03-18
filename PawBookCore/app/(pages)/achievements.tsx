@@ -11,7 +11,7 @@ export default function AchievementsPage() {
       contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Hero */}
+      {/* Summary Bubble */}
       <View style={achieveStyles.hero}>
         <Text style={{ fontSize: 36, marginBottom: 8 }}>🏆</Text>
         <Text style={achieveStyles.heroCount}>{earned} Badges Earned</Text>
