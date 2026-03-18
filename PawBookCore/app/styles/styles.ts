@@ -486,5 +486,7 @@ export const chatScreenStyles = StyleSheet.create({
   parkCardName:  { fontWeight: "600", fontSize: 13, color: theme.text },
   parkCardSub:   { fontSize: 11, color: theme.muted },
   parkCardBtn:   { marginTop: 10, backgroundColor: theme.accent, borderRadius: 12, paddingVertical: 8, alignItems: "center" },
-  parkCardBtnText: { fontWeight: "700", fontSize: 13, color: "#000" },
+  parkCardBtnText:       { fontWeight: "700", fontSize: 13, color: "#000" },
+  parkCardBtnJoined:     { backgroundColor: theme.greenSoft, borderWidth: 1, borderColor: theme.green + "66" },
+  parkCardBtnTextJoined: { fontWeight: "700", fontSize: 13, color: theme.green },
 });

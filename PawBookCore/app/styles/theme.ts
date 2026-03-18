@@ -51,6 +51,7 @@ export const menuItems = [
   { icon: "⚙️", label: "Settings" },
   { icon: "🔔", label: "Notifications" },
   { icon: "🗓️", label: "My Schedule" },
+  { icon: "🐕", label: "My Dog's Profile" },
   { icon: "❓", label: "Help & Support" },
   { icon: "🚪", label: "Sign Out" },
 ];

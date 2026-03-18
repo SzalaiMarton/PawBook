@@ -8,7 +8,7 @@ export default function FriendsPage() {
   const online  = friends.filter((f) => f.online);
   const offline = friends.filter((f) => !f.online);
 
-  const openChat = (id: number) => router.push(`/pages/chat/${id}` as any);
+  const openChat = (id: number) => router.push(`/(pages)/(chat)/${id}` as any);
 
   return (
     <ScrollView

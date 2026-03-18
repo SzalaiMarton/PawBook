@@ -1,10 +1,31 @@
-import { ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { theme, parks } from "../styles/theme";
+import { theme, parks as initialParks } from "../styles/theme";
 import { shared, dashStyles } from "../styles/styles";
 
-export default function Dashboard() {
+export default function Home() {
   const router = useRouter();
+
+  // Local state so Join toggles update the UI immediately
+  const [parkStatus, setParkStatus] = useState<Record<number, boolean>>(
+    () => Object.fromEntries(initialParks.map((p) => [p.id, p.going]))
+  );
+
+  const toggleJoin = (id: number) => {
+    setParkStatus((prev) => {
+      const next = !prev[id];
+      // Optional: show a toast-style feedback
+      if (next) {
+        Alert.alert(
+          "You're going! 🐾",
+          `RSVP confirmed for ${initialParks.find((p) => p.id === id)?.name}.`,
+          [{ text: "Great!", style: "default" }]
+        );
+      }
+      return { ...prev, [id]: next };
+    });
+  };
 
   return (
     <ScrollView
@@ -61,43 +82,52 @@ export default function Dashboard() {
       <View>
         <View style={dashStyles.nearbyHeader}>
           <Text style={dashStyles.nearbyTitle}>Nearby Parks</Text>
-          <TouchableOpacity onPress={() => router.push("/(pages)/map")} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => router.push("/pages/map" as any)} activeOpacity={0.7}>
             <Text style={dashStyles.nearbyLink}>See map →</Text>
           </TouchableOpacity>
         </View>
 
-        {parks.slice(0, 3).map((park) => (
-          <View key={park.id} style={shared.parkRow}>
-            <View
-              style={[
-                shared.parkRowIcon,
-                {
-                  backgroundColor: park.going ? theme.accentSoft : theme.surfaceUp,
+        {initialParks.slice(0, 3).map((park) => {
+          const going = parkStatus[park.id];
+          return (
+            <View key={park.id} style={shared.parkRow}>
+              <View
+                style={[
+                  shared.parkRowIcon,
+                  {
+                    backgroundColor: going ? theme.accentSoft : theme.surfaceUp,
+                    borderWidth: 1,
+                    borderColor: going ? theme.accent + "66" : theme.border,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 20 }}>🌳</Text>
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={shared.parkRowName}>{park.name}</Text>
+                <Text style={shared.parkRowSub}>{park.dogs} dogs · {park.time}</Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => toggleJoin(park.id)}
+                activeOpacity={0.75}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  backgroundColor: going ? theme.accent : theme.surfaceUp,
                   borderWidth: 1,
-                  borderColor: park.going ? theme.accent + "66" : theme.border,
-                },
-              ]}
-            >
-              <Text style={{ fontSize: 20 }}>🌳</Text>
+                  borderColor: going ? "transparent" : theme.border,
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: "600", color: going ? "#000" : theme.muted }}>
+                  {going ? "Going ✓" : "Join"}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={shared.parkRowName}>{park.name}</Text>
-              <Text style={shared.parkRowSub}>{park.dogs} dogs · {park.time}</Text>
-            </View>
-            <View
-              style={{
-                paddingHorizontal: 11, paddingVertical: 5, borderRadius: 20,
-                backgroundColor: park.going ? theme.accent : theme.surfaceUp,
-                borderWidth: 1,
-                borderColor: park.going ? "transparent" : theme.border,
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: "600", color: park.going ? "#000" : theme.muted }}>
-                {park.going ? "Going ✓" : "Join"}
-              </Text>
-            </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </ScrollView>
   );
