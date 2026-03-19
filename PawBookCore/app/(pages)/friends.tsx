@@ -1,12 +1,17 @@
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { theme, friends } from "../styles/theme";
+import { theme } from "../styles/theme";
 import { shared, friendStyles } from "../styles/styles";
+import { getLocation, getProfileById, getProfilePicture } from "../helper_functions";
+import { actionToString, dogbreedToString } from "../types";
+import CustomSearchBar from "../components/custom_search_bar";
+import { currentUser } from "../test_items/test_data";
 
 export default function FriendsPage() {
+  const user = getProfileById(currentUser);
   const router  = useRouter();
-  const online  = friends.filter((f) => f.online);
-  const offline = friends.filter((f) => !f.online);
+  const online  = user.friend_id.filter((id) => getProfileById(id).is_online);
+  const offline = user.friend_id.filter((id) => !getProfileById(id).is_online);
 
   const openChat = (id: number) => router.push(`/(pages)/(chat)/${id}` as any);
 
@@ -17,63 +22,63 @@ export default function FriendsPage() {
       showsVerticalScrollIndicator={false}
     >
       {/* Search */}
-      <View style={[shared.searchBar, { marginBottom: 20 }]}>
-        <Text style={{ fontSize: 16 }}>🔍</Text>
-        <Text style={shared.searchPlaceholder}>Find dog friends...</Text>
-      </View>
+      <CustomSearchBar/>
 
       {/* Online */}
       <Text style={[shared.sectionLabel, { color: theme.accent }]}>
         Active Now · {online.length}
       </Text>
-      {online.map((f) => (
-        <TouchableOpacity
-          key={f.id}
-          style={friendStyles.row}
-          onPress={() => openChat(f.id)}
-          activeOpacity={0.7}
-        >
+      {online.map((id) => {
+        const profile = getProfileById(id);
+
+        return (
+          <TouchableOpacity
+            key={id}
+            style={friendStyles.row}
+            onPress={() => openChat(id)}
+            activeOpacity={0.7}
+          >
           <View style={friendStyles.avatarWrap}>
             <View style={[friendStyles.avatar, { borderWidth: 2, borderColor: theme.green + "44" }]}>
-              <Text style={{ fontSize: 24 }}>{f.avatar}</Text>
+              <Text style={{ fontSize: 24 }}>{getProfilePicture(profile)}</Text>
             </View>
             <View style={[friendStyles.statusDot, { backgroundColor: theme.green }]} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={friendStyles.name}>{f.name}</Text>
-            <Text style={friendStyles.sub}>{f.dog} · {f.breed}</Text>
-            {f.going && (
+            <Text style={friendStyles.name}>{profile.owner_name}</Text>
+            <Text style={friendStyles.sub}>{profile.dog.dog_name} · {dogbreedToString(profile.dog.dog_breed)}</Text>
+            {getLocation(profile) && (
               <View style={friendStyles.goingTag}>
-                <Text style={friendStyles.goingText}>🏃 Heading to {f.going}</Text>
+                <Text style={friendStyles.goingText}>🏃 Heading to {actionToString(profile.action)}</Text>
               </View>
             )}
           </View>
           {/* Chevron hint */}
           <Text style={{ fontSize: 16, color: theme.muted }}>›</Text>
         </TouchableOpacity>
-      ))}
+      )})}
 
       {/* Offline */}
       <View style={{ marginTop: 18 }}>
         <Text style={[shared.sectionLabel, { color: theme.muted }]}>
           Offline · {offline.length}
         </Text>
-        {offline.map((f) => (
+        {offline.map((friend) => (
           <TouchableOpacity
-            key={f.id}
+            key={friend}
             style={[friendStyles.row, { opacity: 0.6 }]}
-            onPress={() => openChat(f.id)}
+            onPress={() => openChat(friend)}
             activeOpacity={0.7}
           >
             <View style={friendStyles.avatarWrap}>
               <View style={[friendStyles.avatar, { borderWidth: 1, borderColor: theme.border }]}>
-                <Text style={{ fontSize: 24 }}>{f.avatar}</Text>
+                <Text style={{ fontSize: 24 }}>{getProfilePicture(getProfileById(friend))}</Text>
               </View>
               <View style={[friendStyles.statusDot, { backgroundColor: theme.muted }]} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={friendStyles.name}>{f.name}</Text>
-              <Text style={friendStyles.sub}>{f.dog} · {f.breed}</Text>
+              <Text style={friendStyles.name}>{getProfileById(friend).owner_name}</Text>
+              <Text style={friendStyles.sub}>{getProfileById(friend).dog.dog_name} · {dogbreedToString(getProfileById(friend).dog.dog_breed)}</Text>
             </View>
             <Text style={{ fontSize: 16, color: theme.muted }}>›</Text>
           </TouchableOpacity>

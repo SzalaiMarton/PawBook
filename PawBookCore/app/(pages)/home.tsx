@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { theme, parks as initialParks } from "../styles/theme";
+import { theme } from "../styles/theme";
 import { shared, dashStyles } from "../styles/styles";
+import { parks as initialParks } from "../test_items/test_data";
+import GreetingHeader from "../components/greeting_header";
+import TodayPlan from "../components/today_plan";
+import { currentUser } from "../test_items/test_data";
+import NoPlanCard from "../components/no_plan_card";
+import { getProfileById } from "../helper_functions";
 
 export default function Home() {
   const router = useRouter();
+  const user = getProfileById(currentUser);
 
   // Local state so Join toggles update the UI immediately
   const [parkStatus, setParkStatus] = useState<Record<number, boolean>>(
-    () => Object.fromEntries(initialParks.map((p) => [p.id, p.going]))
+    () => Object.fromEntries(initialParks.map((p) => [p.park_id]))
   );
 
   const toggleJoin = (id: number) => {
@@ -19,7 +26,7 @@ export default function Home() {
       if (next) {
         Alert.alert(
           "You're going! 🐾",
-          `RSVP confirmed for ${initialParks.find((p) => p.id === id)?.name}.`,
+          `RSVP confirmed for ${initialParks.find((p) => p.park_id === id)?.name}.`,
           [{ text: "Great!", style: "default" }]
         );
       }
@@ -34,34 +41,10 @@ export default function Home() {
       showsVerticalScrollIndicator={false}
     >
       {/* Greeting */}
-      <View>
-        <Text style={dashStyles.greetingSub}>Good afternoon,</Text>
-        <Text style={dashStyles.greetingMain}>Alex &amp; Buddy 🐶</Text>
-      </View>
+      <GreetingHeader/>
 
       {/* Today's Plan */}
-      <View style={dashStyles.todayCard}>
-        <Text style={dashStyles.todayLabel}>Today's Plan</Text>
-        <View style={dashStyles.todayInner}>
-          <View style={dashStyles.todayIcon}>
-            <Text style={{ fontSize: 24 }}>🏞️</Text>
-          </View>
-          <View>
-            <Text style={dashStyles.todayTitle}>Riverside Bark Park</Text>
-            <Text style={dashStyles.todaySub}>Today at 3:00 PM · 7 dogs attending</Text>
-          </View>
-        </View>
-        <View style={dashStyles.todayTags}>
-          {["🐕 Sarah", "🐺 Jake", "+5"].map((tag) => (
-            <View
-              key={tag}
-              style={[shared.card, { paddingHorizontal: 11, paddingVertical: 5, backgroundColor: theme.surface }]}
-            >
-              <Text style={{ fontSize: 12, color: theme.text }}>{tag}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+      {user.going_park_id.length > 0 ? <TodayPlan user={user}/> : <NoPlanCard/>}
 
       {/* Stats */}
       <View style={dashStyles.statsGrid}>
@@ -82,15 +65,15 @@ export default function Home() {
       <View>
         <View style={dashStyles.nearbyHeader}>
           <Text style={dashStyles.nearbyTitle}>Nearby Parks</Text>
-          <TouchableOpacity onPress={() => router.push("/pages/map" as any)} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => router.push("/(pages)/map" as any)} activeOpacity={0.7}>
             <Text style={dashStyles.nearbyLink}>See map →</Text>
           </TouchableOpacity>
         </View>
 
         {initialParks.slice(0, 3).map((park) => {
-          const going = parkStatus[park.id];
+          const going = parkStatus[park.park_id];
           return (
-            <View key={park.id} style={shared.parkRow}>
+            <View key={park.park_id} style={shared.parkRow}>
               <View
                 style={[
                   shared.parkRowIcon,
@@ -106,11 +89,11 @@ export default function Home() {
 
               <View style={{ flex: 1 }}>
                 <Text style={shared.parkRowName}>{park.name}</Text>
-                <Text style={shared.parkRowSub}>{park.dogs} dogs · {park.time}</Text>
+                <Text style={shared.parkRowSub}>{park.dogs_going} dogs</Text>
               </View>
 
               <TouchableOpacity
-                onPress={() => toggleJoin(park.id)}
+                onPress={() => toggleJoin(park.park_id)}
                 activeOpacity={0.75}
                 style={{
                   paddingHorizontal: 12,
@@ -122,7 +105,7 @@ export default function Home() {
                 }}
               >
                 <Text style={{ fontSize: 12, fontWeight: "600", color: going ? "#000" : theme.muted }}>
-                  {going ? "Going ✓" : "Join"}
+                  {going ? "Going" : "Join"}
                 </Text>
               </TouchableOpacity>
             </View>

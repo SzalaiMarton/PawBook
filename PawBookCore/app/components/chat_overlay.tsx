@@ -1,11 +1,14 @@
 import { useRef, useEffect, useState } from "react";
 import { Animated, Modal, Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { overlayStyles, shared } from "../styles/styles";
-import { theme, chatContacts } from "../styles/theme";
+import { theme } from "../styles/theme";
+import { getProfileById, getProfilePicture, getUnreadMessages } from "../helper_functions";
+import { currentUser } from "../test_items/test_data";
 
 function ChatOverlay({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const slideX = useRef(new Animated.Value(300)).current;
   const [isMounted, setMounted] = useState(visible);
+  const user = getProfileById(currentUser);
 
   useEffect(() => {
     if (visible) {
@@ -46,21 +49,21 @@ function ChatOverlay({ visible, onClose }: { visible: boolean; onClose: () => vo
           </View>
 
           <View style={{ flex: 1, padding: 16 }}>
-            {chatContacts.map((c) => (
-              <TouchableOpacity key={c.id} style={overlayStyles.chatRow} activeOpacity={0.7}>
+            {user.chat_id.map((id) => (
+              <TouchableOpacity key={id} style={overlayStyles.chatRow} activeOpacity={0.7}>
                 <View style={overlayStyles.chatAvatar}>
-                  <Text style={{ fontSize: 22 }}>{c.avatar}</Text>
+                  <Text style={{ fontSize: 22 }}>{}</Text> {/* chat picture */}
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={overlayStyles.chatName}>{c.name}</Text>
-                    <Text style={overlayStyles.chatTime}>{c.time}</Text>
+                    <Text style={overlayStyles.chatName}>{getProfileById(id).dog.dog_name}</Text>
+                    {/*<Text style={overlayStyles.chatTime}>{c.}</Text> time for chat */}
                   </View>
-                  <Text style={overlayStyles.chatLast} numberOfLines={1}>{c.last}</Text>
+                  {/*<Text style={overlayStyles.chatLast} numberOfLines={1}>{c.last}</Text>*/}
                 </View>
-                {c.unread > 0 && (
+                {getUnreadMessages(id).length > 0 && (
                   <View style={overlayStyles.chatBadge}>
-                    <Text style={overlayStyles.chatBadgeText}>{c.unread}</Text>
+                    <Text style={overlayStyles.chatBadgeText}>{getUnreadMessages(id).length}</Text>
                   </View>
                 )}
               </TouchableOpacity>

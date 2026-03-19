@@ -4,36 +4,31 @@ import {
   TextInput, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { theme, friends, mockMessages, parks } from "../../styles/theme";
-import { chatScreenStyles as s } from "../../styles/styles";
-
-type Message = {
-  id: number;
-  from: "me" | "them";
-  text: string;
-  time: string;
-};
-
-const AUTO_REPLIES = [
-  "Sounds great! 🐾",
-  "Buddy will love it!",
-  "Can't wait! 🐶",
-  "Perfect, see you there!",
-  "🐕 Woof woof!",
-  "Awesome, see you soon!",
-];
+import { theme } from "../../styles/theme";
+import { chatScreenStyles } from "../../styles/styles";
+import { mockMessages } from "@/app/test_items/test_data";
+import { dateToCustomDate, getParkById, getProfileById, getProfilePicture } from "@/app/helper_functions";
+import { AUTO_REPLIES } from "@/app/test_items/test_data";
+import { Message } from "@/app/types";
+import { currentUser } from "@/app/test_items/test_data";
+import MessageCard from "@/app/components/message_card";
 
 function getTime() {
-  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return new Date();
 }
 
 export default function ChatScreen() {
-  const { id }   = useLocalSearchParams<{ id: string }>();
-  const router   = useRouter();
+  const user = getProfileById(currentUser)
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
 
-  const friendId = Number(id);
-  const friend   = friends.find((f) => f.id === friendId);
+  const friendId = user.friend_id.find((f) => f === Number(id));
+  const friend = getProfileById(friendId);
+
+  if (friendId === undefined) {
+    return;
+  }
 
   // Key state to `friendId` so it fully resets when navigating between chats
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,7 +37,8 @@ export default function ChatScreen() {
 
   // Reset everything whenever the friend changes
   useEffect(() => {
-    setMessages(mockMessages[friendId] ? [...mockMessages[friendId]] : []);
+    const chat = mockMessages.find(c => c.chat_id === friendId);
+    setMessages([]);
     setDraft("");
     setJoined(false);
     // Small delay lets the list mount before scrolling
@@ -53,7 +49,7 @@ export default function ChatScreen() {
   const send = useCallback(() => {
     const text = draft.trim();
     if (!text) return;
-    const outgoing: Message = { id: Date.now(), from: "me", text, time: getTime() };
+    const outgoing: Message = { message_id: Date.now(), messenger_profile_id: user.profile_id, text, time: dateToCustomDate(new Date(Date.now())) };
     setMessages((prev) => [...prev, outgoing]);
     setDraft("");
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
@@ -61,10 +57,10 @@ export default function ChatScreen() {
     // Auto-reply
     const replyTimer = setTimeout(() => {
       const reply: Message = {
-        id: Date.now() + 1,
-        from: "them",
+        message_id: Date.now() + 1,
+        messenger_profile_id: friendId,
         text: AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)],
-        time: getTime(),
+        time: dateToCustomDate(new Date(Date.now())),
       };
       setMessages((prev) => [...prev, reply]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
@@ -74,24 +70,24 @@ export default function ChatScreen() {
   }, [draft]);
 
   const handleJoin = useCallback(() => {
-    if (joined || !friend?.going) return;
+    if (joined || !friend.going_park_id || (friend.going_park_id && friend.going_park_id.length < 0)) return;
     setJoined(true);
-    const park = friend.going;
+    const park = getParkById(friend.going_park_id.at(0)).name;
     const confirmMsg: Message = {
-      id: Date.now(),
-      from: "me",
+      message_id: Date.now(),
+      messenger_profile_id: user.profile_id,
       text: `Just RSVP'd to ${park} — see you there! 🐾`,
-      time: getTime(),
+      time: dateToCustomDate(new Date(Date.now())),
     };
     setMessages((prev) => [...prev, confirmMsg]);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
 
     setTimeout(() => {
       const replyMsg: Message = {
-        id: Date.now() + 1,
-        from: "them",
+        message_id: Date.now() + 1,
+        messenger_profile_id: friendId,
         text: `Yay!! Can't wait to see you and Buddy 🐶🎉`,
-        time: getTime(),
+        time: dateToCustomDate(new Date(Date.now())),
       };
       setMessages((prev) => [...prev, replyMsg]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
@@ -119,110 +115,98 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={s.container}
+      style={chatScreenStyles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={0}
     >
       {/* ── Header ── */}
-      <View style={s.header}>
-        <TouchableOpacity style={s.backBtn} onPress={goBack} activeOpacity={0.7}>
+      <View style={chatScreenStyles.header}>
+        <TouchableOpacity style={chatScreenStyles.backBtn} onPress={goBack} activeOpacity={0.7}>
           <Text style={{ fontSize: 18, color: theme.text }}>←</Text>
         </TouchableOpacity>
 
-        <View style={s.headerAvatar}>
-          <Text style={{ fontSize: 22 }}>{friend.avatar}</Text>
+        <View style={chatScreenStyles.headerAvatar}>
+          <Text style={{ fontSize: 22 }}>{getProfilePicture(friend)}</Text>
         </View>
 
         <View style={{ flex: 1 }}>
-          <Text style={s.headerName}>{friend.name}</Text>
-          <Text style={friend.online ? s.headerOnline : s.headerSub}>
-            {friend.online ? "● Online" : "Offline"} · {friend.dog}
+          <Text style={chatScreenStyles.headerName}>{friend.dog.dog_name}</Text>
+          <Text style={friend.is_online ? chatScreenStyles.headerOnline : chatScreenStyles.headerSub}>
+            {friend.is_online ? "● Online" : "Offline"}
           </Text>
         </View>
 
-        <View style={s.headerRight}>
-          <TouchableOpacity style={s.headerIconBtn} activeOpacity={0.7}>
+        <View style={chatScreenStyles.headerRight}>
+          <TouchableOpacity style={chatScreenStyles.headerIconBtn} activeOpacity={0.7}>
             <Text style={{ fontSize: 16 }}>📍</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.headerIconBtn} activeOpacity={0.7}>
+          <TouchableOpacity style={chatScreenStyles.headerIconBtn} activeOpacity={0.7}>
             <Text style={{ fontSize: 16 }}>⋯</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* ── Park invite card ── */}
-      {friend.going && (
+      {friend.going_park_id && friend.going_park_id?.length > 0 ? (
         <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-          <View style={s.parkCard}>
-            <Text style={s.parkCardLabel}>🏃 Heading to a park</Text>
-            <View style={s.parkCardRow}>
-              <View style={s.parkCardIcon}>
+          <View style={chatScreenStyles.parkCard}>
+            <Text style={chatScreenStyles.parkCardLabel}>🏃 Heading to a park</Text>
+            <View style={chatScreenStyles.parkCardRow}>
+              <View style={chatScreenStyles.parkCardIcon}>
                 <Text style={{ fontSize: 20 }}>🌳</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.parkCardName}>{friend.going}</Text>
-                <Text style={s.parkCardSub}>
-                  Today · {friend.online ? "En route" : "Scheduled"}
+                <Text style={chatScreenStyles.parkCardName}>{getParkById(friend.going_park_id.at(0)).name}</Text>
+                <Text style={chatScreenStyles.parkCardSub}>
+                  Today · {friend.is_online ? "En route" : "Scheduled"}
                 </Text>
               </View>
             </View>
 
             <TouchableOpacity
-              style={[s.parkCardBtn, joined && s.parkCardBtnJoined]}
+              style={[chatScreenStyles.parkCardBtn, joined && chatScreenStyles.parkCardBtnJoined]}
               onPress={handleJoin}
               activeOpacity={joined ? 1 : 0.8}
               disabled={joined}
             >
-              <Text style={[s.parkCardBtnText, joined && s.parkCardBtnTextJoined]}>
+              <Text style={[chatScreenStyles.parkCardBtnText, joined && chatScreenStyles.parkCardBtnTextJoined]}>
                 {joined ? "✓ You're going!" : "Join them →"}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      ) : 
+      <></>
+      }
 
       {/* ── Messages ── */}
       <ScrollView
         ref={scrollRef}
-        style={s.messagesList}
-        contentContainerStyle={s.messagesContent}
+        style={chatScreenStyles.messagesList}
+        contentContainerStyle={chatScreenStyles.messagesContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={s.dateDivider}>
-          <Text style={s.dateDividerText}>Today</Text>
+        <View style={chatScreenStyles.dateDivider}>
+          <Text style={chatScreenStyles.dateDividerText}>Today</Text>
         </View>
 
         {messages.map((msg) => (
-          <View key={msg.id} style={msg.from === "me" ? s.bubbleRowMe : s.bubbleRow}>
-            {msg.from === "them" && (
-              <View style={s.bubbleAvatar}>
-                <Text style={{ fontSize: 14 }}>{friend.avatar}</Text>
-              </View>
-            )}
-            <View style={msg.from === "me" ? s.bubbleMe : s.bubbleThem}>
-              <Text style={msg.from === "me" ? s.bubbleTextMe : s.bubbleTextThem}>
-                {msg.text}
-              </Text>
-              <Text style={msg.from === "me" ? s.bubbleTimeMe : s.bubbleTime}>
-                {msg.time}
-              </Text>
-            </View>
-          </View>
+          <MessageCard props={{msg, friend}}/>
         ))}
       </ScrollView>
 
       {/* ── Input bar ── */}
-      <View style={s.inputBar}>
+      <View style={chatScreenStyles.inputBar}>
         <TouchableOpacity
-          style={[s.sendBtnDisabled, { backgroundColor: theme.surfaceUp }]}
+          style={[chatScreenStyles.sendBtnDisabled, { backgroundColor: theme.surfaceUp }]}
           activeOpacity={0.7}
         >
           <Text style={{ fontSize: 18 }}>🐾</Text>
         </TouchableOpacity>
 
-        <View style={s.inputWrap}>
+        <View style={chatScreenStyles.inputWrap}>
           <TextInput
-            style={s.inputText}
+            style={chatScreenStyles.inputText}
             placeholder="Message..."
             placeholderTextColor={theme.muted}
             value={draft}
@@ -235,7 +219,7 @@ export default function ChatScreen() {
         </View>
 
         <TouchableOpacity
-          style={draft.trim() ? s.sendBtn : s.sendBtnDisabled}
+          style={draft.trim() ? chatScreenStyles.sendBtn : chatScreenStyles.sendBtnDisabled}
           onPress={send}
           activeOpacity={0.8}
           disabled={!draft.trim()}

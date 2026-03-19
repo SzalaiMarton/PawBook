@@ -1,9 +1,10 @@
-import { ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { ScrollView, Text, TouchableOpacity } from "react-native";
 import { feedStyles } from "../styles/styles";
 import { useState } from "react";
+import { filterToString, FilterType } from "../types";
 
-function Filters({filter}: {filter: string[]}) {
-  const [activeFilter,  setActiveFilter]  = useState("All");
+function Filters({filter}: {filter: FilterType[]}) {
+  const [activeFilter,  setActiveFilter]  = useState(filterToString(FilterType.ALL));
 
     return (
         <ScrollView
@@ -14,12 +15,12 @@ function Filters({filter}: {filter: string[]}) {
             {filter.map((f) => (
                 <TouchableOpacity
                     key={f}
-                    style={activeFilter === f ? feedStyles.filterPillActive : feedStyles.filterPill}
-                    onPress={() => setActiveFilter(f)}
+                    style={activeFilter === filterToString(f) ? feedStyles.filterPillActive : feedStyles.filterPill}
+                    onPress={() => setActiveFilter(filterToString(f))}
                     activeOpacity={0.7}
                 >
-                <Text style={activeFilter === f ? feedStyles.filterTextActive : feedStyles.filterText}>
-                    {f}
+                <Text style={activeFilter === filterToString(f) ? feedStyles.filterTextActive : feedStyles.filterText}>
+                    {filterToString(f)}
                 </Text>
                 </TouchableOpacity>
             ))}

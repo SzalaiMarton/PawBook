@@ -548,3 +548,6 @@ export const navStyles = StyleSheet.create({
   label:     { fontSize: 11, fontWeight: "600", letterSpacing: 0.3, color: theme.muted },
   labelActive: { color: theme.accent },
 });
+
+// avoid warning
+export default navStyles;

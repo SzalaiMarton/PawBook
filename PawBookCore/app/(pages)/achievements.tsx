@@ -1,6 +1,7 @@
 import { ScrollView, View, Text } from "react-native";
-import { theme, achievements } from "../styles/theme";
+import { theme } from "../styles/theme";
 import { achieveStyles } from "../styles/styles";
+import { achievements } from "../test_items/test_data";
 
 export default function AchievementsPage() {
   const earned = achievements.filter((a) => a.earned).length;
@@ -22,7 +23,7 @@ export default function AchievementsPage() {
       <View style={achieveStyles.grid}>
         {achievements.map((a) => (
           <View
-            key={a.id}
+            key={a.achievement_id}
             style={[
               achieveStyles.card,
               a.earned
@@ -34,18 +35,18 @@ export default function AchievementsPage() {
             <Text style={a.earned ? achieveStyles.titleEarned : achieveStyles.titleLocked}>
               {a.title}
             </Text>
-            <Text style={achieveStyles.desc}>{a.desc}</Text>
+            <Text style={achieveStyles.desc}>{a.description}</Text>
 
             <View style={achieveStyles.track}>
               <View
                 style={[
                   a.earned ? achieveStyles.fillEarned : achieveStyles.fillLocked,
-                  { width: `${a.progress}%` as any },
+                  { width: `${a.progression}%` as any },
                 ]}
               />
             </View>
             <Text style={achieveStyles.progressLabel}>
-              {a.earned ? "✓ Earned" : `${a.progress}%`}
+              {a.earned ? "✓ Earned" : `${a.progression}%`}
             </Text>
           </View>
         ))}

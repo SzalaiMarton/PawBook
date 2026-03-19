@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { theme, parks } from "../styles/theme";
+import { theme } from "../styles/theme";
 import { shared, mapStyles } from "../styles/styles";
+import { parks } from "../test_items/test_data";
 
 export default function MapPage() {
   const [selectedPark, setSelectedPark] = useState<number | null>(null);
@@ -45,12 +46,12 @@ export default function MapPage() {
 
         {/* Park pins */}
         {parks.map((park) => {
-          const isSelected = selectedPark === park.id;
-          const bg = park.going ? theme.accent : isSelected ? theme.blue : theme.surfaceUp;
+          const isSelected = selectedPark === park.park_id;
+          const bg = park.user_going ? theme.accent : isSelected ? theme.blue : theme.surfaceUp;
           return (
             <TouchableOpacity
-              key={park.id}
-              onPress={() => toggle(park.id)}
+              key={park.park_id}
+              onPress={() => toggle(park.park_id)}
               style={{
                 position: "absolute",
                 left: `${park.x}%` as any,
@@ -62,7 +63,7 @@ export default function MapPage() {
               <View style={{
                 width: 32, height: 32, borderRadius: 16,
                 backgroundColor: bg,
-                borderWidth: 2, borderColor: park.going ? "#000" : theme.border,
+                borderWidth: 2, borderColor: park.user_going ? "#000" : theme.border,
                 alignItems: "center", justifyContent: "center",
               }}>
                 <Text style={{ fontSize: 14 }}>🐾</Text>
@@ -93,40 +94,40 @@ export default function MapPage() {
       <ScrollView style={mapStyles.parkList} showsVerticalScrollIndicator={false}>
         {parks.map((park) => (
           <TouchableOpacity
-            key={park.id}
+            key={park.park_id}
             style={[
               mapStyles.parkMapRow,
-              selectedPark === park.id && {
+              selectedPark === park.park_id && {
                 backgroundColor: theme.blueSoft,
                 borderColor: theme.blue + "66",
               },
             ]}
-            onPress={() => toggle(park.id)}
+            onPress={() => toggle(park.park_id)}
             activeOpacity={0.8}
           >
             <View style={[
               shared.parkRowIcon,
               {
-                backgroundColor: park.going ? theme.accentSoft : theme.surfaceUp,
+                backgroundColor: park.user_going ? theme.accentSoft : theme.surfaceUp,
                 borderWidth: 1,
-                borderColor: park.going ? theme.accent + "44" : theme.border,
+                borderColor: park.user_going ? theme.accent + "44" : theme.border,
               },
             ]}>
               <Text style={{ fontSize: 20 }}>🌳</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={shared.parkRowName}>{park.name}</Text>
-              <Text style={shared.parkRowSub}>{park.dogs} dogs · Next: {park.time}</Text>
+              <Text style={shared.parkRowSub}>{park.dogs_going} dogs</Text>
             </View>
             <View style={{
               paddingHorizontal: 10, paddingVertical: 5,
               borderRadius: 20,
-              backgroundColor: park.going ? theme.accent : theme.surfaceUp,
+              backgroundColor: park.user_going ? theme.accent : theme.surfaceUp,
               borderWidth: 1,
-              borderColor: park.going ? "transparent" : theme.border,
+              borderColor: park.user_going ? "transparent" : theme.border,
             }}>
-              <Text style={{ fontSize: 11, fontWeight: "600", color: park.going ? "#000" : theme.muted }}>
-                {park.going ? "Going" : "RSVP"}
+              <Text style={{ fontSize: 11, fontWeight: "600", color: park.user_going ? "#000" : theme.muted }}>
+                {park.user_going ? "Going" : "Join"}
               </Text>
             </View>
           </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { overlayStyles } from "../styles/styles";
-import { menuItems } from "../styles/theme";
+import { menuItems } from "../test_items/test_data";
 
 function MenuList() {
   return (
