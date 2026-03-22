@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { Animated, Modal, Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { overlayStyles, shared } from "../styles/styles";
 import { theme } from "../styles/theme";
-import { getProfileById, getProfilePicture, getUnreadMessages } from "../helper_functions";
+import { getProfileById, getProfilePicture, getUnreadMessages } from "../backend/helper_functions";
 import { currentUser } from "../test_items/test_data";
 
 function ChatOverlay({ visible, onClose }: { visible: boolean; onClose: () => void }) {

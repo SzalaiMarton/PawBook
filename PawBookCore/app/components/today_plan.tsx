@@ -1,8 +1,8 @@
 import { View, Text } from "react-native";
 import { dashStyles, shared } from "../styles/styles";
 import theme from "../styles/theme";
-import { Profile } from "../types";
-import getParkById from "../helper_functions";
+import { Profile } from "../backend/types";
+import getParkById from "../backend/helper_functions";
 
 function TodayPlan({user}: {user: Profile}) {
     const park = getParkById(user.going_park_id.at(0));

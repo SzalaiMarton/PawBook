@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { theme } from "./theme";
+import { CSSProperties } from "react";
 
 export const shared = StyleSheet.create({
   // ── Layout ──
@@ -133,45 +134,6 @@ export const dashStyles = StyleSheet.create({
   nearbyHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
   nearbyTitle:  { fontWeight: "700", fontSize: 15, color: theme.text },
   nearbyLink:   { fontSize: 12, color: theme.accent },
-});
-
-// ── Map ──
-export const mapStyles = StyleSheet.create({
-  canvas: {
-    marginHorizontal: 16,
-    borderRadius: 20,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: theme.border,
-    height: 260,
-    backgroundColor: "#0d1a0d",
-    position: "relative",
-  },
-  legend: {
-    position: "absolute", top: 10, right: 10,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 10,
-    padding: 8,
-    gap: 4,
-  },
-  legendRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText:{ fontSize: 10, color: theme.muted },
-  parkList:  { padding: 14, flex: 1 },
-  parkMapRow:{
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 14, paddingVertical: 13,
-    borderRadius: 16, borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.card,
-    marginBottom: 8,
-  },
-  userDot: {
-    width: 14, height: 14, borderRadius: 7,
-    backgroundColor: theme.blue,
-    shadowColor: theme.blue, shadowOpacity: 0.5,
-    shadowRadius: 6, shadowOffset: { width: 0, height: 0 },
-  },
 });
 
 // ── Friends ──
@@ -548,6 +510,120 @@ export const navStyles = StyleSheet.create({
   label:     { fontSize: 11, fontWeight: "600", letterSpacing: 0.3, color: theme.muted },
   labelActive: { color: theme.accent },
 });
+
+export const mapStyle = {
+  root: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    background: theme.bg,
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    color: theme.text,
+  } as CSSProperties,
+
+  searchWrap: { padding: "12px 14px" } as CSSProperties,
+
+  searchBar: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    background: theme.surfaceUp,
+    borderRadius: 12,
+    border: `1px solid ${theme.border}`,
+    padding: "10px 14px",
+  } as CSSProperties,
+
+  searchInput: {
+    flex: 1,
+    background: "transparent",
+    border: "none",
+    outline: "none",
+    color: theme.text,
+    fontSize: 15,
+  } as CSSProperties,
+
+  mapWrap: { flex: "0 0 45%", position: "relative" } as CSSProperties,
+  mapNode: { width: "100%", height: "100%" } as CSSProperties,
+
+  legend: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    zIndex: 1000,
+    background: "rgba(15,17,23,0.88)",
+    border: `1px solid ${theme.border}`,
+    borderRadius: 10,
+    padding: "8px 12px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    backdropFilter: "blur(8px)",
+  } as CSSProperties,
+
+  legendRow: { display: "flex", alignItems: "center", gap: 8 } as CSSProperties,
+
+  legendDot: (color: string, border: string | null): CSSProperties => ({
+    width: 12,
+    height: 12,
+    borderRadius: "50%",
+    background: color,
+    border: border ? `1.5px solid ${border}` : "none",
+  }),
+
+  legendText: { fontSize: 11, color: theme.textSub } as CSSProperties,
+
+  list: { flex: 1, overflowY: "auto", padding: "8px 14px 14px" } as CSSProperties,
+
+  parkRow: (selected: boolean): CSSProperties => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "12px 14px",
+    borderRadius: 14,
+    marginBottom: 8,
+    background: selected ? theme.blueSoft : theme.surface,
+    border: `1px solid ${selected ? theme.blue + "55" : theme.border}`,
+    cursor: "pointer",
+    transition: "all .15s ease",
+  }),
+
+  parkIcon: (going: boolean): CSSProperties => ({
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    background: going ? theme.accentSoft : theme.surfaceUp,
+    border: `1px solid ${going ? theme.accent + "44" : theme.border}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 20,
+    flexShrink: 0,
+  }),
+
+  parkName: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: theme.text,
+    marginBottom: 2,
+  } as CSSProperties,
+
+  parkSub: { fontSize: 12, color: theme.muted } as CSSProperties,
+
+  badge: (going: boolean): CSSProperties => ({
+    padding: "5px 12px",
+    borderRadius: 20,
+    fontSize: 11,
+    fontWeight: 600,
+    background: going ? theme.accent : theme.surfaceUp,
+    color: going ? "#000" : theme.muted,
+    border: `1px solid ${going ? "transparent" : theme.border}`,
+    cursor: "pointer",
+    flexShrink: 0,
+    transition: "all .15s ease",
+    whiteSpace: "nowrap",
+  }),
+};
+
 
 // avoid warning
 export default navStyles;

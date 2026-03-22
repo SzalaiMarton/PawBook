@@ -7,9 +7,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { theme } from "../../styles/theme";
 import { chatScreenStyles } from "../../styles/styles";
 import { mockMessages } from "@/app/test_items/test_data";
-import { dateToCustomDate, getParkById, getProfileById, getProfilePicture } from "@/app/helper_functions";
+import { dateToCustomDate, getParkById, getProfileById, getProfilePicture } from "@/app/backend/helper_functions";
 import { AUTO_REPLIES } from "@/app/test_items/test_data";
-import { Message } from "@/app/types";
+import { Message } from "@/app/backend/types";
 import { currentUser } from "@/app/test_items/test_data";
 import MessageCard from "@/app/components/message_card";
 

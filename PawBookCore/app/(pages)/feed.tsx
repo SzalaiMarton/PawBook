@@ -1,9 +1,10 @@
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { theme } from "../styles/theme";
 import Filters from "../components/filters";
-import { FeedItem, FilterType } from "../types";
+import { FilterType, FeedItem } from "../backend/types";
 import FeedCard from "../components/feed_card";
-import { dateToCustomDate } from "../helper_functions";
+import { feedItems } from "../test_items/test_data";
+import { useState, useEffect } from "react";
 
 const FILTERS: FilterType[] = [
   FilterType.ALL, 
@@ -11,22 +12,37 @@ const FILTERS: FilterType[] = [
   FilterType.GOING_OUT,
   FilterType.PHOTOS
 ];
-const feedItems: FeedItem[] = [
-  {feed_item_id: 1, profile_id: 1, likes: 2, comments: 3, time: dateToCustomDate(new Date(2026, 4, 3))},
-  {feed_item_id: 2, profile_id: 3, likes: 3, comments: 3, time: dateToCustomDate(new Date(2026, 4, 3))},
-  {feed_item_id: 3, profile_id: 2, likes: 4, comments: 1, time: dateToCustomDate(new Date(2026, 4, 3))},
-  {feed_item_id: 4, profile_id: 4, likes: 2, comments: 10, time: dateToCustomDate(new Date(2026, 4, 3))}
-]
 
 export default function FeedPage() {
+  const [activeFilter, setActiveFilter] = useState(FilterType.ALL);
+  const [activeItems, setActiveItems] = useState<FeedItem[]>([]);
+
+  useEffect(() => {
+    getActiveItems();
+  }, [activeFilter]);
+
+  function getActiveItems() {
+    let temp = []
+    for (let i = 0; i < feedItems.length; i++) {
+      if (activeFilter === FilterType.ALL) {
+        temp.push(feedItems[i]);
+      }
+      else if (feedItems[i].filter !== undefined && activeFilter === feedItems[i].filter) {
+        temp.push(feedItems[i]);
+      }
+    }
+    setActiveItems(temp)
+  }
+  
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.bg }}
       contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
       showsVerticalScrollIndicator={false}
     >
-      <Filters filter={FILTERS}/>
-      {feedItems.map((element) => (
+      <Filters filter={FILTERS} onPress={(f) => setActiveFilter(f)} />
+      {activeItems.map((element) => (
         <FeedCard item={element}/>
       ))}
     </ScrollView>

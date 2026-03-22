@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
-import { dateToCustomDate, getProfileById, getProfilePicture } from "../helper_functions";
+import { dateToCustomDate, getProfileById, getProfilePicture } from "../backend/helper_functions";
 import { currentUser } from "../test_items/test_data";
-import { Message, Profile } from "../types";
+import { Message, Profile } from "../backend/types";
 import { chatScreenStyles } from "../styles/styles";
 
 type Props = {

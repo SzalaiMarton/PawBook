@@ -55,6 +55,7 @@ export function parksizeToString(size: ParkSize | undefined) {
 }
 
 export function actionToString(type: ActionType | undefined) {
+    console.log(type)
     switch (type) {
         case ActionType.AT_HOME:
             return "At home";
@@ -84,11 +85,18 @@ export function filterToString(type: FilterType | undefined) {
     }
 }
 
+export type Location = {
+    lat: number;
+    lng: number;
+}
+
 export type Profile = {
     profile_id: number;
     friend_id: number[];
     going_park_id: number[];
     chat_id: number[];
+    liked_post_id: number[];
+    current_location: Location;
     is_online: boolean;
     dog: Dog;
     owner_name: string;
@@ -108,7 +116,7 @@ export type FeedItem = {
     likes: number;
     comments: number;
     time: CustomDate;
-    filter?: FilterType;
+    filter?: FilterType | undefined;
     uploaded_pictures?: string[]; 
 }
 
@@ -128,9 +136,10 @@ export type MenuItem = {
 
 export type ParkLocation = {
     park_id: number;
-    x: number;
-    y: number;
+    lat: number;
+    lng: number;
     dogs_going: number[]; // profile ids
+    dogs_there: number [];
     user_going: boolean;
     name: string;
     park_size: ParkSize | undefined;

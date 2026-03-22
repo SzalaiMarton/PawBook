@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { feedStyles } from "../styles/styles";
-import { actionToString, FeedItem } from "../types";
+import { actionToString, FeedItem } from "../backend/types";
 import { useState } from "react";
-import { getLocation } from "../helper_functions";
+import { getProfileById, timeElapsed } from "../backend/helper_functions";
 
 function FeedCard({item}: {item: FeedItem}) {
     const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
@@ -14,20 +14,18 @@ function FeedCard({item}: {item: FeedItem}) {
             {/* Header */}
             <View style={feedStyles.cardHeader}>
               <View style={feedStyles.avatar}>
-                {<Text style={{ fontSize: 22 }}>{item.profile.profile_picture ? item.profile.profile_picture : "🐶"}</Text>}
+                {<Text style={{ fontSize: 22 }}>{getProfileById(item.profile_id).profile_picture ? getProfileById(item.profile_id).profile_picture : "🐶"}</Text>}
               </View>
               <View>
-                <Text style={feedStyles.userName}>{item.profile.dog.dog_name}</Text>
+                <Text style={feedStyles.userName}>{getProfileById(item.profile_id).dog.dog_name}</Text>
+                <Text style={feedStyles.text}>{actionToString(getProfileById(item.profile_id).action)}</Text>
               </View>
-              <Text style={feedStyles.time}>{item.time}</Text>
+              <Text style={feedStyles.time}>{timeElapsed(item.time)}</Text>
             </View>
 
-            {/* Text */}
-            <Text style={feedStyles.text}>
-              <Text style={feedStyles.textBold}>{actionToString(item.profile.action)}</Text>
-              {" "}{actionToString(item.profile.action)}{" "}
-              <Text style={feedStyles.textAccent}>{getLocation(item.profile)}</Text>
-            </Text>
+            {/* Feed item contents */}
+            {/* Feed item contents */}
+            {/* Feed item contents */}
 
             {/* Optional image */}
             {item.uploaded_pictures && (

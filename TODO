@@ -1,8 +1,8 @@
-- feed_card.tsx fix errors
+- map
 
 - make ui renders as data is
+- ui change as data changes -> achievements
+- make search bar actually search for something -> ui change accordingly
 
 - create languages as tokens -> switching languages
 - create designe tokens -> more centralised designe, avoid magic numbers
-- ui change as data changes -> achievements
-- make search bar actually search for something -> ui change accordingly

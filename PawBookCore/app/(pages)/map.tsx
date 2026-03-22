@@ -1,138 +1,229 @@
-import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { theme } from "../styles/theme";
-import { shared, mapStyles } from "../styles/styles";
+import { useState, useEffect, useRef, CSSProperties, MouseEvent, JSX } from "react";
+import type { Map as LeafletMap, Marker, DivIcon } from "leaflet";
+import { mapStyle } from "../styles/styles";
+import { ParkLocation } from "../backend/types";
 import { parks } from "../test_items/test_data";
+import theme from "../styles/theme";
+import { currentUser } from "../test_items/test_data";
+import { getProfileById } from "../backend/helper_functions";
 
-export default function MapPage() {
+// Extend Window to include the dynamically loaded Leaflet global
+declare global {
+  interface Window {
+    L: typeof import("leaflet");
+  }
+}
+
+// ─── Leaflet CSS injected once ────────────────────────────────────────────────
+
+function useLeafletCSS(): void {
+  useEffect(() => {
+    if (document.getElementById("leaflet-css")) return;
+
+    const link = document.createElement("link");
+    link.id = "leaflet-css";
+    link.rel = "stylesheet";
+    link.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+    document.head.appendChild(link);
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .leaflet-container { background: #0f1117 !important; font-family: inherit; }
+      .leaflet-control-attribution { background: rgba(15,17,23,0.85) !important; color: #6b7280 !important; }
+      .leaflet-control-attribution a { color: #60a5fa !important; }
+      .leaflet-control-zoom a { background: #1f2330 !important; color: #f1f5f9 !important; border-color: #2a2f3d !important; }
+      .leaflet-control-zoom a:hover { background: #2a2f3d !important; }
+      .leaflet-popup-content-wrapper { background: #181b24; color: #f1f5f9; border: 1px solid #2a2f3d; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+      .leaflet-popup-tip { background: #181b24; }
+      .leaflet-popup-close-button { color: #6b7280 !important; }
+    `;
+    document.head.appendChild(style);
+  }, []);
+}
+
+// ─── Build a coloured SVG pin as a Leaflet DivIcon ────────────────────────────
+
+function makePinIcon(L: typeof import("leaflet"), color: string, borderColor: string): DivIcon {
+  return L.divIcon({
+    className: "",
+    html: `
+      <div style="
+        width:34px;height:34px;border-radius:50%;
+        background:${color};
+        border:2.5px solid ${borderColor};
+        display:flex;align-items:center;justify-content:center;
+        font-size:16px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.45);
+        cursor:pointer;
+        transition:transform .15s ease;
+      ">🐾</div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 34],
+    popupAnchor: [0, -36],
+  });
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export default function MapPage(): JSX.Element {
   const [selectedPark, setSelectedPark] = useState<number | null>(null);
+  const [parkList, setParkList] = useState<ParkLocation[]>(parks);
+  const [search, setSearch] = useState<string>("");
+  const [leafletReady, setLeafletReady] = useState<boolean>(false);
 
-  const toggle = (id: number) => setSelectedPark((p) => (p === id ? null : id));
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const leafletMap = useRef<LeafletMap | null>(null);
+  const markersRef = useRef<Record<number, Marker>>({});
+
+  useLeafletCSS();
+
+  // Load Leaflet script dynamically
+  useEffect(() => {
+    if (window.L) {
+      setLeafletReady(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    script.onload = () => setLeafletReady(true);
+    document.head.appendChild(script);
+  }, []);
+
+  // Initialise map once Leaflet is ready
+  useEffect(() => {
+    if (!leafletReady || !mapRef.current || leafletMap.current) return;
+    const L = window.L;
+    const user = getProfileById(currentUser)
+    const map = L.map(mapRef.current, {
+      center: [user.current_location.lat, user.current_location.lng],
+      zoom: 14,
+      zoomControl: true,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+    }).addTo(map);
+
+    parkList.forEach((park: ParkLocation) => {
+      const color = park.user_going ? theme.accent : theme.surfaceUp;
+      const border = park.user_going ? "#000" : theme.border;
+      const icon = makePinIcon(L, color, border);
+
+      const marker = L.marker([park.lat, park.lng], { icon }).addTo(map);
+
+      marker.bindPopup(`
+        <div style="min-width:180px;padding:4px 2px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px">${park.name}</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:2px">🐕 ${park.dogs_there.length} dogs there now</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:10px">📅 ${park.dogs_going.length} dogs coming</div>
+          <div style="
+            display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
+            background:${park.user_going ? theme.accent : theme.surfaceUp};
+            color:${park.user_going ? "#000" : theme.textSub};
+            border:1px solid ${park.user_going ? "transparent" : theme.border};
+          ">${park.user_going ? "✓ Going" : "Join"}</div>
+        </div>
+      `);
+
+      marker.on("click", () => {
+        setSelectedPark((prev) => (prev === park.park_id ? null : park.park_id));
+      });
+
+      markersRef.current[park.park_id] = marker;
+    });
+
+    leafletMap.current = map;
+  }, [leafletReady]);
+
+  // Pan map when selection changes from the list
+  useEffect(() => {
+    if (!leafletMap.current || selectedPark === null) return;
+    const park = parkList.find((p) => p.park_id === selectedPark);
+    if (!park) return;
+    leafletMap.current.flyTo([park.lat, park.lng], 15, { duration: 0.8 });
+    markersRef.current[park.park_id]?.openPopup();
+  }, [selectedPark]);
+
+  const toggle = (id: number): void =>
+    setSelectedPark((prev) => (prev === id ? null : id));
+
+  const toggleGoing = (e: MouseEvent<HTMLButtonElement>, id: number): void => {
+    e.stopPropagation();
+    setParkList((prev) =>
+      prev.map((p) => (p.park_id === id ? { ...p, user_going: !p.user_going } : p))
+    );
+    if (leafletMap.current && window.L) {
+      const park = parkList.find((p) => p.park_id === id);
+      if (!park) return;
+      const nowGoing = !park.user_going;
+      const color = nowGoing ? theme.accent : theme.surfaceUp;
+      const border = nowGoing ? "#000" : theme.border;
+      markersRef.current[id]?.setIcon(makePinIcon(window.L, color, border));
+    }
+  };
+
+  const filtered: ParkLocation[] = parkList.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.bg }}>
+    <div style={mapStyle.root}>
       {/* Search */}
-      <View style={{ padding: 14 }}>
-        <View style={shared.searchBar}>
-          <Text style={{ fontSize: 16 }}>🔍</Text>
-          <Text style={shared.searchPlaceholder}>Search parks near you...</Text>
-        </View>
-      </View>
-
-      {/* Map canvas */}
-      <View style={mapStyles.canvas}>
-        {/* Grid lines (horizontal) */}
-        {[...Array(7)].map((_, i) => (
-          <View
-            key={`h${i}`}
-            style={{
-              position: "absolute", left: 0, right: 0,
-              top: `${(i + 1) * 12.5}%`, height: 1,
-              backgroundColor: "rgba(255,255,255,0.03)",
-            }}
+      <div style={mapStyle.searchWrap}>
+        <div style={mapStyle.searchBar}>
+          <span style={{ fontSize: 16 }}>🔍</span>
+          <input
+            style={mapStyle.searchInput}
+            placeholder="Search parks near you..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
-        ))}
-        {/* Grid lines (vertical) */}
-        {[...Array(7)].map((_, i) => (
-          <View
-            key={`v${i}`}
-            style={{
-              position: "absolute", top: 0, bottom: 0,
-              left: `${(i + 1) * 12.5}%`, width: 1,
-              backgroundColor: "rgba(255,255,255,0.03)",
-            }}
-          />
-        ))}
+        </div>
+      </div>
 
-        {/* Park pins */}
-        {parks.map((park) => {
-          const isSelected = selectedPark === park.park_id;
-          const bg = park.user_going ? theme.accent : isSelected ? theme.blue : theme.surfaceUp;
-          return (
-            <TouchableOpacity
-              key={park.park_id}
-              onPress={() => toggle(park.park_id)}
-              style={{
-                position: "absolute",
-                left: `${park.x}%` as any,
-                top: `${park.y}%` as any,
-                transform: [{ translateX: -16 }, { translateY: -32 }],
-              }}
-              activeOpacity={0.8}
-            >
-              <View style={{
-                width: 32, height: 32, borderRadius: 16,
-                backgroundColor: bg,
-                borderWidth: 2, borderColor: park.user_going ? "#000" : theme.border,
-                alignItems: "center", justifyContent: "center",
-              }}>
-                <Text style={{ fontSize: 14 }}>🐾</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-
-        {/* User dot */}
-        <View style={{ position: "absolute", left: "48%", top: "48%" as any }}>
-          <View style={mapStyles.userDot} />
-        </View>
+      {/* Leaflet Map */}
+      <div style={mapStyle.mapWrap}>
+        <div ref={mapRef} style={mapStyle.mapNode} />
 
         {/* Legend */}
-        <View style={mapStyles.legend}>
-          <View style={mapStyles.legendRow}>
-            <View style={[mapStyles.legendDot, { backgroundColor: theme.accent }]} />
-            <Text style={mapStyles.legendText}>You're going</Text>
-          </View>
-          <View style={mapStyles.legendRow}>
-            <View style={[mapStyles.legendDot, { backgroundColor: theme.surfaceUp, borderWidth: 1, borderColor: theme.border }]} />
-            <Text style={mapStyles.legendText}>Available</Text>
-          </View>
-        </View>
-      </View>
+        <div style={mapStyle.legend}>
+          <div style={mapStyle.legendRow}>
+            <div style={mapStyle.legendDot(theme.accent, null)} />
+            <span style={mapStyle.legendText}>You're going</span>
+          </div>
+          <div style={mapStyle.legendRow}>
+            <div style={mapStyle.legendDot(theme.surfaceUp, theme.border)} />
+            <span style={mapStyle.legendText}>Available</span>
+          </div>
+        </div>
+      </div>
 
       {/* Park list */}
-      <ScrollView style={mapStyles.parkList} showsVerticalScrollIndicator={false}>
-        {parks.map((park) => (
-          <TouchableOpacity
-            key={park.park_id}
-            style={[
-              mapStyles.parkMapRow,
-              selectedPark === park.park_id && {
-                backgroundColor: theme.blueSoft,
-                borderColor: theme.blue + "66",
-              },
-            ]}
-            onPress={() => toggle(park.park_id)}
-            activeOpacity={0.8}
-          >
-            <View style={[
-              shared.parkRowIcon,
-              {
-                backgroundColor: park.user_going ? theme.accentSoft : theme.surfaceUp,
-                borderWidth: 1,
-                borderColor: park.user_going ? theme.accent + "44" : theme.border,
-              },
-            ]}>
-              <Text style={{ fontSize: 20 }}>🌳</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={shared.parkRowName}>{park.name}</Text>
-              <Text style={shared.parkRowSub}>{park.dogs_going} dogs</Text>
-            </View>
-            <View style={{
-              paddingHorizontal: 10, paddingVertical: 5,
-              borderRadius: 20,
-              backgroundColor: park.user_going ? theme.accent : theme.surfaceUp,
-              borderWidth: 1,
-              borderColor: park.user_going ? "transparent" : theme.border,
-            }}>
-              <Text style={{ fontSize: 11, fontWeight: "600", color: park.user_going ? "#000" : theme.muted }}>
+      <div style={mapStyle.list}>
+        {filtered.map((park: ParkLocation) => {
+          const selected = selectedPark === park.park_id;
+          return (
+            <div
+              key={park.park_id}
+              style={mapStyle.parkRow(selected)}
+              onClick={() => toggle(park.park_id)}
+            >
+              <div style={mapStyle.parkIcon(park.user_going)}>🌳</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={mapStyle.parkName}>{park.name}</div>
+                <div style={mapStyle.parkSub}>{park.dogs_there.length} dogs currently there</div>
+                <div style={mapStyle.parkSub}>{park.dogs_going.length} dogs will be there</div>
+              </div>
+              <button
+                style={mapStyle.badge(park.user_going)}
+                onClick={(e) => toggleGoing(e, park.park_id)}
+              >
                 {park.user_going ? "Going" : "Join"}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

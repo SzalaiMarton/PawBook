@@ -2,8 +2,8 @@ import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { theme } from "../styles/theme";
 import { shared, friendStyles } from "../styles/styles";
-import { getLocation, getProfileById, getProfilePicture } from "../helper_functions";
-import { actionToString, dogbreedToString } from "../types";
+import { getLocation, getProfileById, getProfilePicture } from "../backend/helper_functions";
+import { actionToString, dogbreedToString } from "../backend/types";
 import CustomSearchBar from "../components/custom_search_bar";
 import { currentUser } from "../test_items/test_data";
 

@@ -8,7 +8,7 @@ import GreetingHeader from "../components/greeting_header";
 import TodayPlan from "../components/today_plan";
 import { currentUser } from "../test_items/test_data";
 import NoPlanCard from "../components/no_plan_card";
-import { getProfileById } from "../helper_functions";
+import { getProfileById } from "../backend/helper_functions";
 
 export default function Home() {
   const router = useRouter();

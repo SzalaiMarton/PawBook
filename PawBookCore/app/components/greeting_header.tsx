@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import { dashStyles } from "../styles/styles";
 import { currentUser } from "../test_items/test_data";
-import { dateToCustomDate, getProfileById } from "../helper_functions";
+import { dateToCustomDate, getProfileById } from "../backend/helper_functions";
 
 function GreetingHeader() {
     const user = getProfileById(currentUser);
