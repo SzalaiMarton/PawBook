@@ -1,17 +1,19 @@
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { theme } from "../styles/theme";
-import { shared, friendStyles } from "../styles/styles";
+import { shared, friendStyles, mapStyle } from "../styles/styles";
 import { getLocation, getProfileById, getProfilePicture } from "../backend/helper_functions";
 import { actionToString, dogbreedToString } from "../backend/types";
-import CustomSearchBar from "../components/custom_search_bar";
 import { currentUser } from "../test_items/test_data";
+import CustomSearchBar from "../components/search_bar";
+import { useState } from "react";
 
 export default function FriendsPage() {
   const user = getProfileById(currentUser);
   const router  = useRouter();
   const online  = user.friend_id.filter((id) => getProfileById(id).is_online);
   const offline = user.friend_id.filter((id) => !getProfileById(id).is_online);
+  const [search, setSearch] = useState<string>("");
 
   const openChat = (id: number) => router.push(`/(pages)/(chat)/${id}` as any);
 
@@ -22,7 +24,14 @@ export default function FriendsPage() {
       showsVerticalScrollIndicator={false}
     >
       {/* Search */}
-      <CustomSearchBar/>
+      <CustomSearchBar
+      search={search}
+      setSearch={setSearch}
+      defaultText="Search For a friend..."
+      searchBar={mapStyle.searchBar}
+      searchInput={mapStyle.searchInput}
+      searchWrap={mapStyle.searchWrap}
+      />
 
       {/* Online */}
       <Text style={[shared.sectionLabel, { color: theme.accent }]}>

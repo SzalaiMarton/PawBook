@@ -1,14 +1,16 @@
 import { useRef, useEffect, useState } from "react";
 import { Animated, Modal, Text, View, TouchableOpacity, StyleSheet } from "react-native";
-import { overlayStyles, shared } from "../styles/styles";
+import { mapStyle, overlayStyles } from "../styles/styles";
 import { theme } from "../styles/theme";
-import { getProfileById, getProfilePicture, getUnreadMessages } from "../backend/helper_functions";
+import { getProfileById, getUnreadMessages } from "../backend/helper_functions";
 import { currentUser } from "../test_items/test_data";
+import CustomSearchBar from "./search_bar";
 
 function ChatOverlay({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const slideX = useRef(new Animated.Value(300)).current;
   const [isMounted, setMounted] = useState(visible);
   const user = getProfileById(currentUser);
+  const [search, setSearch] = useState<string>("")
 
   useEffect(() => {
     if (visible) {
@@ -70,12 +72,14 @@ function ChatOverlay({ visible, onClose }: { visible: boolean; onClose: () => vo
             ))}
           </View>
 
-          <View style={overlayStyles.chatSearchWrap}>
-            <View style={shared.searchBar}>
-              <Text style={{ fontSize: 16 }}>🔍</Text>
-              <Text style={shared.searchPlaceholder}>Search conversations...</Text>
-            </View>
-          </View>
+          <CustomSearchBar
+          search={search}
+          setSearch={setSearch}
+          defaultText="Search for conversations..."
+          searchBar={mapStyle.searchBar}
+          searchInput={mapStyle.searchInput}
+          searchWrap={mapStyle.searchWrap}
+          />
         </Animated.View>
       </View>
     </Modal>
